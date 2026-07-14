@@ -1,7 +1,8 @@
 const rateLimit = require('express-rate-limit');
 
-const windowMinutes = parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '15', 10);
+const windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10);
 const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
+const uploadMaxRequests = parseInt(process.env.UPLOAD_RATE_LIMIT_MAX || '250', 10);
 
 /**
  * General API rate limiter. Protects upload/convert endpoints from abuse
@@ -10,7 +11,7 @@ const maxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10);
  * each requiring upload + conversion + polling requests).
  */
 const apiLimiter = rateLimit({
-  windowMs: windowMinutes * 60 * 1000,
+  windowMs: windowMs,
   max: maxRequests,
   standardHeaders: true,
   legacyHeaders: false,
@@ -25,8 +26,8 @@ const apiLimiter = rateLimit({
  * user from saturating disk/storage with massive uploads.
  */
 const uploadLimiter = rateLimit({
-  windowMs: windowMinutes * 60 * 1000,
-  max: Math.max(50, Math.round(maxRequests / 4)),
+  windowMs: windowMs,
+  max: uploadMaxRequests,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
